@@ -84,8 +84,10 @@ static float PickerViewH  = 200;
     {
         self.selectMonthRow = row;
 		
-		// 月份选择完 去重置第三列数据
-		[self.datePickerView reloadComponent:2];
+		// 月份选择完 去重置第三列数据 要进行判断 看是否有第三行
+		if (self.type == SKDateStyleTypeYearAndMonthAndDay) {
+			[self.datePickerView reloadComponent:2];
+		}
 		
     }else{
 		self.selectDayRow = row;
@@ -179,20 +181,38 @@ static float PickerViewH  = 200;
 {
     NSDate *date = [NSDate date];
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setDateFormat:@"yyyy-MM"];
+    [formatter setDateFormat:@"yyyy-MM-dd"];
     NSString *currentDate = [formatter stringFromDate:date];
     int year  = [[currentDate componentsSeparatedByString:@"-"][0] intValue];
     int month = [[currentDate componentsSeparatedByString:@"-"][1] intValue];
+	
+    int day =  [[currentDate componentsSeparatedByString:@"-"][2] intValue];
 
     NSInteger currentRow = year - [self.year[0] integerValue];
     
-    [self.datePickerView selectRow:currentRow - 1 inComponent:0 animated:NO];
+
     if (self.type == SKDateStyleTypeYearAndMonth) {
-        [self.datePickerView selectRow:0 inComponent:1 animated:NO];
-    }
-	[self.datePickerView selectRow:3 inComponent:1 animated:NO];
-	self.selectYearRow = currentRow - 1;
-	self.selectMonthRow = 3;
+        [self.datePickerView selectRow:currentRow inComponent:0 animated:NO];
+		[self.datePickerView selectRow:month - 1 inComponent:1 animated:NO];
+		self.selectYearRow = currentRow;
+		self.selectMonthRow = month - 1;
+		
+    }else if (self.type == SKDateStyleTypeYearAndMonthAndDay){
+		[self.datePickerView selectRow:currentRow inComponent:0 animated:NO];
+		[self.datePickerView selectRow:month - 1 inComponent:1 animated:NO];
+		[self.datePickerView selectRow:day - 1 inComponent:2 animated:NO];
+		
+		self.selectYearRow = currentRow;
+		self.selectMonthRow = month - 1;
+		self.selectDayRow = day - 1;
+	
+	}else {
+		[self.datePickerView selectRow:currentRow inComponent:0 animated:NO];
+		self.selectYearRow = currentRow ;
+
+	}
+	
+
 	
 }
 
@@ -275,8 +295,17 @@ static float PickerViewH  = 200;
     {
         month = [NSString stringWithFormat:@"0%@",month];
     }
-    
-    NSString *resultDate = [NSString stringWithFormat:@"%@年%@月%@日",year,month,day];
+	
+        NSString *resultDate = @"";
+    // 根据用户选择的Type 去设置对应的格式
+    if (self.type == SKDateStyleTypeYear) {
+		resultDate = [NSString stringWithFormat:@"%@年",year];
+	}else if (self.type == SKDateStyleTypeYearAndMonth){
+		resultDate = [NSString stringWithFormat:@"%@年%@月",year,month];
+	}else{
+		resultDate = [NSString stringWithFormat:@"%@年%@月%@日",year,month,day];
+	}
+
     
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(didSelectDateResult:)])
