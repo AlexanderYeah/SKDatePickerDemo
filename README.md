@@ -9,3 +9,6 @@
 ### Two issue pending  
 * 闰年没有判断  
 * 年 单独会崩
+
+
+### 12.27 Fix the bug what select year cause app crash issue
